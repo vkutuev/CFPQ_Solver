@@ -4,8 +4,6 @@ from typing import Hashable
 import graphblas as gb
 import networkx as nx
 from graphblas import Matrix
-from graphblas.monoid import TypedBuiltinMonoid
-from graphblas.semiring import TypedBuiltinSemiring
 from graphblas.dtypes import BOOL
 from graphblas.semiring import any_pair
 from pyformlang.cfg import CFG
@@ -49,8 +47,8 @@ class MatrixReachabilityAlgorithm(AllPairsReachabilityAlgorithm):
     def _solve_all_pairs(self) -> None:
         graph = self._matrix_graph
         grammar = self._wcnf
-        any_pair_bool: TypedBuiltinSemiring = any_pair[bool]
-        any_bool: TypedBuiltinMonoid = any_pair_bool.monoid
+        any_pair_bool = any_pair[bool]
+        any_bool = any_pair_bool.monoid
 
         # Initialize matrices for variables
         self._t = GraphBooleanDecomposition(graph.matrices_size)
