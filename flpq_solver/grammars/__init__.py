@@ -1,1 +1,1 @@
-from .wcnf import *
+from .wcnf import WCNF
