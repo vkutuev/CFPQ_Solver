@@ -1,0 +1,15 @@
+[MAIN]
+
+# Auto-detect jobs
+jobs=0
+
+[MESSAGES CONTROL]
+
+disable=
+    no-name-in-module, # specifics of python-graphblas imports
+    expression-not-assigned, # specifics of python-graphblas operations
+    too-few-public-methods, # specifics of classes with algorithms
+
+[FORMAT]
+
+max-line-length=120
