@@ -1,9 +1,10 @@
+"""Module containing the implementation of the algorithm based on matrix multiplication."""
+
 from collections import defaultdict
 from typing import Hashable
 
 import graphblas as gb
 import networkx as nx
-from graphblas import Matrix
 from graphblas.dtypes import BOOL
 from graphblas.semiring import any_pair
 from pyformlang.cfg import CFG
@@ -14,6 +15,8 @@ from ..graphs import GraphBooleanDecomposition, gbd_from_nx_graph
 
 
 class MatrixReachabilityAlgorithm(AllPairsReachabilityAlgorithm):
+    """All pairs reachability algorithm based on Boolean matrix multiplication"""
+
     _wcnf: WCNF
     _matrix_graph: GraphBooleanDecomposition
     _t: GraphBooleanDecomposition
@@ -47,8 +50,6 @@ class MatrixReachabilityAlgorithm(AllPairsReachabilityAlgorithm):
     def _solve_all_pairs(self) -> None:
         graph = self._matrix_graph
         grammar = self._wcnf
-        any_pair_bool = any_pair[bool]
-        any_bool = any_pair_bool.monoid
 
         # Initialize matrices for variables
         self._t = GraphBooleanDecomposition(graph.matrices_size)
@@ -58,8 +59,19 @@ class MatrixReachabilityAlgorithm(AllPairsReachabilityAlgorithm):
             )
 
         # 0. Variable -> Epsilon
+        self._process_epsilon_productions(grammar, graph)
+
+        # 1. Variable -> Terminal
+        self._process_unary_productions(grammar, graph)
+
+        # 2. Variable -> Variable Variable
+        self._process_binary_productions(grammar)
+
+    def _process_epsilon_productions(
+        self, grammar: WCNF, graph: GraphBooleanDecomposition
+    ) -> None:
         id_indices = list(range(graph.matrices_size))
-        m_id = Matrix.from_coo(
+        m_id = gb.Matrix.from_coo(
             rows=id_indices,
             columns=id_indices,
             values=True,
@@ -70,7 +82,10 @@ class MatrixReachabilityAlgorithm(AllPairsReachabilityAlgorithm):
         for rule in grammar.epsilon_productions:
             self._t[rule.head.to_text()] = m_id.dup()
 
-        # 1. Variable -> Terminal
+    def _process_unary_productions(
+        self, grammar: WCNF, graph: GraphBooleanDecomposition
+    ) -> None:
+        any_bool = any_pair[bool].monoid
         for rule in grammar.unary_productions:
             terminal = rule.body[0].to_text()
             if terminal in graph:
@@ -78,9 +93,12 @@ class MatrixReachabilityAlgorithm(AllPairsReachabilityAlgorithm):
                     self._t[rule.head.to_text()] | graph[terminal]
                 )
 
-        # 2. Transitive closure calculation
-        nnz = defaultdict(int)
+    def _process_binary_productions(self, grammar: WCNF) -> None:
+        any_pair_bool = any_pair[bool]
+        any_bool = any_pair_bool.monoid
 
+        # Transitive closure calculation
+        nnz = defaultdict(int)
         changed = True
         while changed:
             changed = False

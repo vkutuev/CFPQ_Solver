@@ -21,7 +21,7 @@ class GraphBooleanDecomposition:
 
         :param n: The number of nodes in graph.
         """
-        self._matrices: dict[str, Matrix] = dict()
+        self._matrices: dict[str, Matrix] = {}
         self._matrices_size: int = n
 
     def __getitem__(self, label: str) -> Matrix:
@@ -51,9 +51,9 @@ class GraphBooleanDecomposition:
         :param label: The label of the edge
         """
         if min(u, v) > self._matrices_size:
-            for label in self._matrices:
+            for _, matrix in self._matrices.items():
                 self._matrices_size = max(u, v)
-                self._matrices[label].resize(self._matrices_size, self._matrices_size)
+                matrix.resize(self._matrices_size, self._matrices_size)
 
         if label not in self._matrices:
             self._matrices[label] = Matrix(
@@ -76,7 +76,7 @@ def gbd_from_nx_graph(
     """
     g = GraphBooleanDecomposition(graph.number_of_nodes())
 
-    nodes_dict = dict()
+    nodes_dict = {}
     nodes_list = []
     nodes_num = 0
 
